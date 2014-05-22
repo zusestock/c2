@@ -30,9 +30,9 @@ include(VIEWPATH."dashboard/dashboard_header.php");
 			</div>
 		</div>
 		<div class="control-group">
-			<label class="control-label">存取款密码</label>
+			<label class="control-label">交易密码</label>
 			<div class="controls">
-				<input type="password" class="span6 m-wrap" name="withdrawpass">
+				<input type="password" class="span6 m-wrap" name="dealmoneypass">
 			</div>
 		</div>
 		<button type="submit" class='btn blue'>提交</button>

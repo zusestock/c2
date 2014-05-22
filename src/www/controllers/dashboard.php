@@ -24,6 +24,7 @@
 			define("DEAD", '2');
         }
 
+
 		public function index() {
 			$this->load->view("dashboard/useraccount/newuser", $this->data);
 			// header("location: /dashboard/viewactivitystateone");
@@ -62,18 +63,19 @@
 					$this->data['inputpassword'] = true;
 					$this->data['nationalid'] = $nationalid;
 					if ($dealpass && $dealpassagain && $withdrawpass && $withdrawpassagain) {
-						if ($dealpass == $dealpassagain) {
-							if ($withdrawpassagain == $dealpass) {
-								//// BUG
-								$this->data['account'] = $this->moneyaccount->addaccount($dealpass, $withdrawpass);
-								$this->stockaccount->setMoneyAccout($stockaccount, $this->data['account']);
-
+						//if(){ if there has existed moneyaccount 
+							if ($dealpass == $dealpassagain) {
+								if ($withdrawpassagain == $withdrawpass) {
+									//// BUG why not $withdrawpassagain == $withdrawpass?
+									$this->data['account'] = $this->moneyaccount->addaccount($dealpass, $withdrawpass);
+									$this->stockaccount->setMoneyAccout($stockaccount, $this->data['account']);
+								} else {
+									$error[] = "取款密码不一样";
+								}
 							} else {
-								$error[] = "取款密码不一样";
+								$error[] = "交易密码不一样";
 							}
-						} else {
-							$error[] = "交易密码不一样";
-						}
+						//}wait for zhuge
 					} else {
 						$error[] = "所有密码必填";
 					}
@@ -93,19 +95,25 @@
 				$withdrawmoney = $this->input->post("withdrawmoney", true);
 				$dealtype = $this->input->post("dealtype", true);
 				if ($moneyaccount && $withdrawpass && $withdrawmoney && $dealtype != "") {
-					if ($this->moneyaccount->isMoneyAccountValid($moneyaccount, $withdrawpass)) {
-						$re = "操作成功";
-						if ($dealtype == "1") {
-							if (!$this->moneyaccount->addmoney($moneyaccount, $withdrawmoney))
-								$re = "增加存款失败";
-						} else {
-							if (!$this->moneyaccount->submoney($moneyaccount, $withdrawmoney)) {
-								$re = "取款失败";
+					if($this->moneyaccount->getState($moneyaccount)==NORMAL){
+						if ($this->moneyaccount->isMoneyAccountValid($moneyaccount, $withdrawpass)) {
+							$re = "操作成功";
+							if ($dealtype == "1") {
+								if (!$this->moneyaccount->addmoney($moneyaccount, $withdrawmoney))
+									$re = "增加存款失败";
+							} else {
+								if (!$this->moneyaccount->submoney($moneyaccount, $withdrawmoney)) {
+									$re = "取款失败";
+								}
 							}
-						}
-						$error[] = $re;
-					} else {
-						$error[] = "账户密码不匹配";
+							$error[] = $re;
+						} else {
+							$error[] = "账户密码不匹配";
+	 					}
+	 				} else if($this->moneyaccount->getState($moneyaccount)==DEAD){
+	 					$error[] = "账户已被注销";
+	 				} else if($this->moneyaccount->getState($moneyaccount)==CANNTFIND){
+	 					$error[] = "账户挂失中";
 	 				}
 	 			} else {
 					$error[] = "所有都为必填项";
@@ -123,9 +131,9 @@
 				$error = array();
 				$nationalid = $this->input->post("nationalid", true);
 				$moneyaccount = $this->input->post("moneyaccount", true);
-				$withdrawpass = $this->input->post("withdrawpass", true);
-				if ($nationalid && $moneyaccount && $withdrawpass) {
-					if ($this->moneyaccount->isMoneyAccountValid($moneyaccount, $withdrawpass)) {
+				$dealpass = $this->input->post("dealpass", true);
+				if ($nationalid && $moneyaccount && $dealpass) {
+					if ($this->moneyaccount->isdealMoneyAccountValid($moneyaccount, $dealpass)) {
 						if ($this->stockaccount->isNationalIdValid($nationalid, $moneyaccount)) {
 							$this->moneyaccount->changeState($moneyaccount, CANNTFIND);
 							$this->data['state'] = "挂失中";
@@ -210,10 +218,11 @@
 				;
 			} else {
 				$error = array();
+				$nationalid = $this->input->post("nationalid", true);
 				$moneyaccount = $this->input->post("moneyaccount", true);
-				$withdrawpass = $this->input->post("withdrawpass", true);
-				if ($moneyaccount && $withdrawpass) {
-					if ($this->moneyaccount->isMoneyAccountValid($moneyaccount, $withdrawpass)) {
+				$dealmoneypass = $this->input->post("dealmoneypass", true);
+				if ($moneyaccount && $dealmoneypass) {
+					if ($this->moneyaccount->isdealMoneyAccountValid($moneyaccount, $dealmoneypass)) {
 						if ($this->stockaccount->isNationalIdValid($nationalid, $moneyaccount)) {
 							if ($this->moneyaccount->getMoneyLeft($moneyaccount) > 0) {
 								$error[] = "请取完余额再进行操作";
@@ -234,5 +243,115 @@
 			}
 			$this->load->view("dashboard/destroy/cancelaccount", $this->data);
 		}
+
+
+		private function getStateWord($state) {
+			switch ($state) {
+			case NORMAL:
+				return "正常状态";
+			case DEAD:
+				return "已销户";
+			case CANNTFIND:
+				return "挂失";
+			}
+		}
+		public function change_deal_psd($method = "") {
+			if ($_SERVER['REQUEST_METHOD'] == "GET") {
+				;// if ($method == "password")
+					// $this->data['inputpassword'] = true;
+			} else {
+				$moneyaccount = $this->input->post("moneyaccount", true);
+				$dealpasswdold = $this->input->post("passwdold", true);
+				$dealpasswdnew = $this->input->post("passwdnew", true);
+				$dealpassagain = $this->input->post("passwdnewagain", true);
+				$error = array();
+
+				if ($moneyaccount && $dealpasswdold && $dealpasswdnew && $dealpassagain) {
+					
+					 if ($this->moneyaccount->isdealMoneyAccountValid($moneyaccount,$dealpasswdold)){
+					 	if ( ($state = $this->moneyaccount->getState($moneyaccount)) == NORMAL) {
+							if($dealpasswdnew==$dealpassagain){
+								//to be continue
+								$this->moneyaccount->update_deal_passwd($moneyaccount,$dealpasswdnew);
+								$this->data['moneyaccount'] = $moneyaccount;
+								$this->data['inputpassword'] = true;
+								$this->data['success'] = true;
+							}
+							else{
+								$error[] = "两次输入交易密码不一样";
+							}
+					 	} else {
+							$error[] = "帐号".$tchange_withdraw_psdhis->getStateWord($state);
+					 	}
+					}
+					else{
+						$error[] = "账号密码不匹配";	
+					}
+				}
+				else {
+					$error[] = "所有都为必填项";
+	 			}
+				$this->data['error'] = $error;
+				$this->data['post'] = true;
+			}
+			$this->load->view("dashboard/useraccount/change_deal_psd", $this->data);
+		}
+
+
+		public function change_withdraw_psd($method = "") {
+			if ($_SERVER['REQUEST_METHOD'] == "GET") {
+				;// if ($method == "password")
+					// $this->data['inputpassword'] = true;
+			} else {
+				$moneyaccount = $this->input->post("moneyaccount", true);
+				$withdraw_passwdold = $this->input->post("passwdold", true);
+				$withdraw_passwdnew = $this->input->post("passwdnew", true);
+				$withdraw_passagain = $this->input->post("passwdnewagain", true);
+				$error = array();
+
+				if ($moneyaccount && $withdraw_passwdold && $withdraw_passwdnew && $withdraw_passagain) {
+					
+					 if ($this->moneyaccount->isMoneyAccountValid($moneyaccount,$withdraw_passwdold)){
+					 	if ( ($state = $this->moneyaccount->getState($moneyaccount)) == NORMAL) {
+							if($withdraw_passwdnew==$withdraw_passagain){
+								//to be continue
+								$this->moneyaccount->update_withdraw_passwd($moneyaccount,$withdraw_passwdnew);
+								$this->data['moneyaccount'] = $moneyaccount;
+								$this->data['inputpassword'] = true;
+								$this->data['success'] = true;
+							}
+							else{
+								$error[] = "两次输入取款密码不一样";
+							}
+						} else {
+							$error[] = "帐号".$tchange_withdraw_psdhis->getStateWord($state);
+						}
+					}
+					else{
+						$error[] = "账号密码不匹配";	
+					}
+				}
+				else {
+					$error[] = "所有都为必填项";
+	 			}
+				$this->data['error'] = $error;
+			}
+			$this->load->view("dashboard/useraccount/change_withdraw_psd", $this->data);
+		}
+
+		public function viewmoneyleft() {
+			if ($_SERVER['REQUEST_METHOD'] == "GET") {
+			} else {
+				$moneyaccount = $this->input->post("moneyaccount", true);
+				$withdrawpass = $this->input->post("withdrawpass", true);
+				if ($this->moneyaccount->isMoneyAccountValid($moneyaccount, $withdrawpass)) {
+					$this->data['left'] = $this->moneyaccount->getMoneyLeft($moneyaccount);
+				} else {
+					$this->data['error'] = "取款密码不正确";
+				}
+			}
+			$this->load->view("dashboard/useraccount/viewmoneyleft", $this->data);
+		}
+
 	}
 ?>

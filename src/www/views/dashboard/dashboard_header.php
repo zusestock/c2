@@ -124,12 +124,33 @@
 					<span class="title">资金帐户销户</span>
 					</a>
 				</li>
-				<li class="last ">
-					<a href="/dashboard/changepassword">
-					<i class="icon-bar-chart"></i>
-					<span class="title">修改密码</span>
+				<li class="">
+					<a href="/dashboard/viewmoneyleft">
+					<i class="icon-briefcase"></i>
+					<span class="title">查询账户余额</span>
 					</a>
 				</li>
+				<!--edit by chenke-->
+				<li class="last ">
+					<a href="javascript:;">
+					<i class="icon-bar-chart"></i>
+					<span class="title">修改密码</span>
+					<span class="arrow "></span>
+					</a>
+					<ul class="sub-menu">
+						<li >
+							<a href="/dashboard/change_deal_psd">
+							<i class="icon-time"></i>
+							修改交易密码</a>
+						</li>
+						<li >
+							<a href="/dashboard/change_withdraw_psd">
+							<i class="icon-cogs"></i>
+							修改取款密码</a>
+						</li>
+					</ul>
+				</li>
+				<!--edit by chenke-->
 			</ul>
 		</div>
 		<!-- END SIDEBAR -->
