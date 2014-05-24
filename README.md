@@ -52,7 +52,7 @@ c2
 ```
 
 ###interface with C3:
-```json
+```
 http://stockmoney.0x271828.com/api/getavail?account=xxxxxx&token=xxxxxxx
 {
 	result: "1",
