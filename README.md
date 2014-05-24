@@ -68,6 +68,7 @@ http://stockmoney.0x271828.com/api/chpassword?account=xxxxxx&originpass=xxxx&now
 	result: "0",
 	error: "invalid token"
 }
+http://stockmoney.0x271828.com/api/login?account=xxxxxx&password=xxxx&token=xxxxxxx
 token: md5('zhangzhenrui')
 result: "0" => error occurred
 ```
