@@ -50,3 +50,24 @@ c2
 |           |       `-- newuser.php
 |           `-- login.php
 ```
+
+###interface with C3:
+```json
+http://stockmoney.0x271828.com/api/getavail?account=xxxxxx&token=xxxxxxx
+{
+	result: "1",
+	money: "100"
+}
+http://stockmoney.0x271828.com/api/getfrozen?account=xxxxxx&token=xxxxxxx
+{
+	result: "1"
+	money: "100"
+}
+http://stockmoney.0x271828.com/api/chpassword?account=xxxxxx&originpass=xxxx&nowpass=xxxx&token=xxxxxxx
+{
+	result: "0",
+	error: "invalid token"
+}
+token: md5('zhangzhenrui')
+result: "0" => error occurred
+```
