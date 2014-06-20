@@ -51,24 +51,25 @@ c2
 |           `-- login.php
 ```
 
-###interface with C3:
+### interface
+- C3
+  - http://stockmoney.0x271828.com/api/getinfo?account=xxxxxx&token=xxxxxxx
+```json
+{
+   result: '0',
+   avail: 100,
+   frozen: 100
+}
 ```
-http://stockmoney.0x271828.com/api/getavail?account=xxxxxx&token=xxxxxxx
-{
-	result: "1",
-	money: "100"
-}
-http://stockmoney.0x271828.com/api/getfrozen?account=xxxxxx&token=xxxxxxx
-{
-	result: "1"
-	money: "100"
-}
-http://stockmoney.0x271828.com/api/chpassword?account=xxxxxx&originpass=xxxx&nowpass=xxxx&token=xxxxxxx
+  - http://stockmoney.0x271828.com/api/chpassword?account=xxxxxx&originpass=xxxx&nowpass=xxxx&token=xxxxxxx
+```
 {
 	result: "0",
 	error: "invalid token"
 }
-http://stockmoney.0x271828.com/api/login?account=xxxxxx&password=xxxx&token=xxxxxxx
-token: md5('zhangzhenrui')
-result: "0" => error occurred
 ```
+
+###interface with C3:
+- token: md5('c3')
+- result: "0" => error occurred
+
